@@ -1,0 +1,150 @@
+.code {
+    -fx-font-family: "Fira Code";
+    -fx-font-size: 24;
+    -fx-fill: -white;
+}
+
+.button {
+    -fx-font-family: "Fira Code";
+    -fx-font-size: 24;
+    -fx-background-color: -black;
+    -fx-background-radius: 10;
+    -fx-border-color: -white;
+    -fx-border-radius: 10;
+    -fx-border-width: 3;
+    -fx-text-fill: -white;
+}
+
+.text-area {
+    -fx-font-family: "Fira Code";
+    -fx-font-size: 24;
+    -fx-text-fill: -white;
+}
+
+.text-area .content {
+    -fx-background-color: -black;
+}
+
+.button:hover {
+    -fx-background-color: #3A3F4B;
+}
+
+.syntax-type {
+    -fx-font-weight: bold;
+    -fx-fill: -yellow;
+}
+
+.syntax-keyword {
+    -fx-fill: -purple;
+}
+
+.syntax-number {
+    -fx-fill: -yellow;
+}
+
+.syntax-parameter {
+    -fx-fill: -yellow;
+}
+
+.syntax-string {
+    -fx-fill: -green;
+}
+
+.syntax-method {
+    -fx-fill: -blue;
+}
+
+.syntax-field {
+    -fx-fill: -red;
+}
+
+.syntax-comment {
+    -fx-fill: -teal;
+}
+
+.syntax-error {
+    -fx-fill: -red;
+    -fx-font-weight: bold;
+}
+
+.text-area .scroll-pane {
+    -fx-hbar-policy: NEVER;
+    -fx-vbar-policy: NEVER;
+}
+
+VBox {
+    -fx-background-color: #282C34;
+}
+
+CodeEditor {
+    -black: #282C34;
+    -red: #E06C75;
+    -green: #98C379;
+    -yellow: #E5C07B;
+    -blue: #61AFEF;
+    -purple: #C678DD;
+    -teal: #56B6C2;
+    -white: #ABB2BF;
+}
+
+.error {
+    -fx-font-family: "Fira Code";
+    -fx-font-size: 24;
+    -fx-fill: #E06C75;
+    -fx-font-weight: bold;
+}
+
+.docText {
+    -fx-fill: #ABB2BF;
+    -fx-font-family: "PT Serif";
+    -fx-font-size: 24;
+}
+
+.bold {
+    -fx-font-weight: bold;
+}
+
+.italic {
+    -fx-font-style: italic;
+}
+
+.inlineCode {
+    -fx-font-family: "Fira Code";
+}
+
+.h1 {
+    -fx-font-size: 48;
+    -fx-font-weight: bold;
+}
+
+.h2 {
+    -fx-font-size: 36;
+    -fx-font-weight: bold;
+}
+
+.h3 {
+    -fx-font-size: 28;
+    -fx-font-weight: bold;
+}
+
+.h4 {
+    -fx-font-weight: bold;
+}
+
+.h5 {
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+}
+
+.h6 {
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+}
+
+.unorderedList {
+
+}
+
+.orderedList {
+
+}

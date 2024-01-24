@@ -1,4 +1,4 @@
-package org.example;
+package org.openjfx;
 
 import javax.tools.*;
 import java.io.File;
@@ -20,7 +20,22 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Compiler {
-    public static List<Class<?>> compile(String... targets) {
+
+    public sealed interface CompilationResult {
+        record Success(List<Class<?>> classList) implements CompilationResult {
+        }
+
+        record CompilationError(List<String> errorList) implements CompilationResult {
+        }
+
+        record UnsufficientRightsError(String message) implements CompilationResult {
+        }
+
+        record NoPublicClass() implements CompilationResult {
+        }
+    }
+
+    public static CompilationResult compile(String... targets) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StringWriter compilerOutput = new StringWriter();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
@@ -32,17 +47,17 @@ public class Compiler {
         File folder = new File("compilation");
         if (!folder.exists()) {
             if (!folder.mkdir())
-                return List.of();
+                return new CompilationResult.UnsufficientRightsError("Cannot create compilation folder");
         } else for (File file : Objects.requireNonNull(folder.listFiles()))
             if (!file.delete())
-                return List.of();
+                return new CompilationResult.UnsufficientRightsError("Cannot clear compilation directory");
         for (String target : targets) {
             Pattern pattern = Pattern.compile("public\\sclass\\s([A-Za-z]+)");
             Matcher matcher = pattern.matcher(target);
             String fileName;
             if (matcher.find())
                 fileName = matcher.group(1);
-            else return List.of();
+            else return new CompilationResult.NoPublicClass();
             File testJava = new File("compilation/" + fileName + ".java");
             try {
                 try (FileWriter fileWriter = new FileWriter(testJava)) {
@@ -62,22 +77,22 @@ public class Compiler {
             );
 
             if (!compilationTask.call()) {
+                List<String> errors = new ArrayList<>();
                 for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
-                    System.out.format("Error on line %d in %s:%n%s%n",
+                    errors.add("Error on line %d:%n%s%n".formatted(
                             diagnostic.getLineNumber(),
-                            diagnostic.getSource().toUri(),
-                            diagnostic.getMessage(null));
+                            diagnostic.getMessage(null)));
                 }
-                return List.of();
+                return new CompilationResult.CompilationError(errors);
             }
         }
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{folder.toURI().toURL()})) {
-            for (File classFile: Objects.requireNonNull(folder.listFiles((dir, name) -> name.endsWith(".class"))))
+            for (File classFile : Objects.requireNonNull(folder.listFiles((dir, name) -> name.endsWith(".class"))))
                 compiledClasses.add(classLoader.loadClass(classFile.getName().split("\\.")[0]));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return List.copyOf(compiledClasses);
+        return new CompilationResult.Success(compiledClasses);
     }
 
     public enum MethodVisibility {
@@ -107,10 +122,10 @@ public class Compiler {
         record NoSuchMethod(String signature) implements MethodCallResult {
             NoSuchMethod(String name, Object... params) {
                 this(name +
-                        "(" + Arrays.stream(params)
-                        .map(Object::getClass)
-                        .map(Class::toGenericString)
-                        .collect(Collectors.joining(", ")) + ")");
+                     "(" + Arrays.stream(params)
+                             .map(Object::getClass)
+                             .map(Class::toGenericString)
+                             .collect(Collectors.joining(", ")) + ")");
             }
         }
 
@@ -200,6 +215,22 @@ public class Compiler {
          * or it lacks a default constructor.
          */
         record NotInstantiable() implements ConstructorCallResult {
+        }
+    }
+
+    public static boolean hasMainMethod(Class<?> compiledClass) {
+        try {
+            Method method = compiledClass.getMethod("main", String.class.arrayType());
+            if (method.getReturnType() != void.class)
+                return false;
+            int modifiers = method.getModifiers();
+            if (!Modifier.isPublic(modifiers))
+                return false;
+            if (!Modifier.isStatic(modifiers))
+                return false;
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
         }
     }
 
